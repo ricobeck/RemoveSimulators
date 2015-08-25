@@ -28,19 +28,25 @@ func getDeviceListOutput() -> String? {
 }
 
 func deleteDeviceWithUuid(uuid: String) {
-    print("deleting: \(uuid)")
-    let task = NSTask()
-    task.launchPath = "/usr/bin/xcrun"
-    task.arguments = ["simctl", "delete", uuid]
-    
-    let pipe = NSPipe()
-    task.standardOutput = pipe
-    task.launch()
-    task.waitUntilExit()
-    
-    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    if let output = NSString(data: data, encoding: NSUTF8StringEncoding) {
-        print("-> \(output)")
+    let path = NSString(string: "~/Library/Developer/CoreSimulator/Devices").stringByExpandingTildeInPath.stringByAppendingFormat("/%@/data/Containers", uuid) as String
+  
+    if !NSFileManager.defaultManager().fileExistsAtPath(path) {
+        print("deleting: \(uuid)")
+        let task = NSTask()
+        task.launchPath = "/usr/bin/xcrun"
+        task.arguments = ["simctl", "delete", uuid]
+        
+        let pipe = NSPipe()
+        task.standardOutput = pipe
+        task.launch()
+        task.waitUntilExit()
+        
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        if let output = NSString(data: data, encoding: NSUTF8StringEncoding) {
+            print("-> \(output)")
+        }
+    } else {
+        print("preserving \(uuid)")
     }
 }
 
